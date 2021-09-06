@@ -1,0 +1,19 @@
+//* Really serious and important liscence. Don't reuse this or else. Or else what? *//
+
+
+//ROADMAP: 
+
+// engine class with while loop forever takes in input and updating state with ticks
+// (ticks can initally be 120 / s)
+
+
+// input class reading for players inputs every time in the game loop, 
+// if there are updates it returns an object of all of them
+
+
+// state class holding the games state in a map and opening functions to mutate it safley
+
+// storage class to save the users progress every so often (10 seconds, write state to local storage)
+
+// draw class with a refresh every 60 frames reading the state of rendering it
+
