@@ -5,17 +5,12 @@ type GameResource = {
     gold: number,
     exp: number,
 }
-
 enum EntityType {
     Villager = "villager",
     Mill = "mill",
     Armory = "armory",
     Shop = "shop",
 }
-
-
-
-
 class GameEntity {
     quantity: number;
     type: EntityType; 
@@ -42,7 +37,6 @@ class GameEntity {
         return generatedResources;
     };
 }
-
 class GameInput {
     public inputs: {} = {};
 
@@ -58,10 +52,11 @@ class GameInput {
         document.addEventListener("keydown",(e) => {
             this.inputs[e.key] = true;
         });
-
-        window.addEventListener("click", () => {
+        document.addEventListener("click", (e) => {
+            console.log(e);
+            
             this.inputs['click'] = true;
-        });
+        }, false);
     };
 }
 class GameShop {
@@ -90,6 +85,9 @@ class GameState {
     entities: Record<string, GameEntity>;
     resources: GameResource;
     shop: GameShop;
+    clickPower: number;
+    heroLevel: number;
+    expToLevel: number;
 
     constructor(time: number) {
         this.time = time;
@@ -99,10 +97,17 @@ class GameState {
             exp: 0
         }
         this.entities = {};
+        this.clickPower = 1;
+        this.heroLevel = 1;
+        this.expToLevel = 100;
     }
 
     handleInput(input: Record<string, boolean>) {
         for(const event in input){
+            if(event == "click"){
+                console.log("handling click");
+                this.resources.gold++;
+            }
             if(event == "v"){
                 console.log("adding villager..");
                 this.addEntity(EntityType.Villager);
@@ -140,11 +145,19 @@ class GameState {
     }
 
     update() {
+
         for (const entity in this.entities) {
             const newResources = this.entities[entity].tick();
             this.resources.gold += newResources.gold;
             this.resources.exp += newResources.exp;
         }
+
+        if(this.resources.exp >= this.expToLevel){
+            this.expToLevel = this.expToLevel * 3;
+            this.resources.exp = 0;
+            this.heroLevel++;
+        }
+
         this.drawState();
     };
 
@@ -167,8 +180,13 @@ class GameState {
         if(this.entities[EntityType.Mill]){
             popCount.armory = this.entities[EntityType.Mill].quantity.toString()
         }
-        document.body.innerHTML = "";
-        document.body.innerHTML = " <br> \
+        const left = document.getElementById("left-panel");
+        const right = document.getElementById("right-panel");
+        left.innerHTML = " <br> \
+        <b> click power: " + this.clickPower + " </b> <br> \
+        <b> Steve - lvl: " + this.heroLevel + " </b>\
+        <br> \
+        <br> \
         <table> \
         <tr>\
             <th>Production</th>\
@@ -189,15 +207,10 @@ class GameState {
             <td>Armory</td>\
             <td>" + popCount[EntityType.Armory] + " </td>\
         </tr>\
-        </table>\
-        <br> \
-        <br> \
-        <b> gold : " + this.resources.gold + " </b> \
+        </table>"
+
+        right.innerHTML = "<b> gold : " + this.resources.gold + " </b><br>  \
         <b> exp : " + this.resources.exp + " </b>\
-        <br> \
-        <br> \
-        <br> \
-        <br> \
         <br> \
         <br> \
         <table> \
@@ -230,8 +243,7 @@ class GameState {
     }
 
 
-};
-
+}
 class GameEngine {
 
     state: GameState;
@@ -276,7 +288,7 @@ class GameEngine {
     };
 }
 
-//TODO: make this DI easier to work with
+
 const state: GameState = new GameState(Date.now());
 const engine: GameEngine = new GameEngine(state);
 begin(engine);

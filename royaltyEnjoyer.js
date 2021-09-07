@@ -45,9 +45,10 @@ var GameInput = /** @class */ (function () {
         document.addEventListener("keydown", function (e) {
             _this.inputs[e.key] = true;
         });
-        window.addEventListener("click", function () {
+        document.addEventListener("click", function (e) {
+            console.log(e);
             _this.inputs['click'] = true;
-        });
+        }, false);
     };
     ;
     return GameInput;
@@ -82,9 +83,16 @@ var GameState = /** @class */ (function () {
             exp: 0
         };
         this.entities = {};
+        this.clickPower = 1;
+        this.heroLevel = 1;
+        this.expToLevel = 100;
     }
     GameState.prototype.handleInput = function (input) {
         for (var event_1 in input) {
+            if (event_1 == "click") {
+                console.log("handling click");
+                this.resources.gold++;
+            }
             if (event_1 == "v") {
                 console.log("adding villager..");
                 this.addEntity(EntityType.Villager);
@@ -125,6 +133,11 @@ var GameState = /** @class */ (function () {
             this.resources.gold += newResources.gold;
             this.resources.exp += newResources.exp;
         }
+        if (this.resources.exp >= this.expToLevel) {
+            this.expToLevel = this.expToLevel * 3;
+            this.resources.exp = 0;
+            this.heroLevel++;
+        }
         this.drawState();
     };
     ;
@@ -147,8 +160,13 @@ var GameState = /** @class */ (function () {
         if (this.entities[EntityType.Mill]) {
             popCount.armory = this.entities[EntityType.Mill].quantity.toString();
         }
-        document.body.innerHTML = "";
-        document.body.innerHTML = " <br> \
+        var left = document.getElementById("left-panel");
+        var right = document.getElementById("right-panel");
+        left.innerHTML = " <br> \
+        <b> click power: " + this.clickPower + " </b> <br> \
+        <b> Steve - lvl: " + this.heroLevel + " </b>\
+        <br> \
+        <br> \
         <table> \
         <tr>\
             <th>Production</th>\
@@ -169,15 +187,9 @@ var GameState = /** @class */ (function () {
             <td>Armory</td>\
             <td>" + popCount[EntityType.Armory] + " </td>\
         </tr>\
-        </table>\
-        <br> \
-        <br> \
-        <b> gold : " + this.resources.gold + " </b> \
+        </table>";
+        right.innerHTML = "<b> gold : " + this.resources.gold + " </b><br>  \
         <b> exp : " + this.resources.exp + " </b>\
-        <br> \
-        <br> \
-        <br> \
-        <br> \
         <br> \
         <br> \
         <table> \
@@ -210,7 +222,6 @@ var GameState = /** @class */ (function () {
     };
     return GameState;
 }());
-;
 var GameEngine = /** @class */ (function () {
     function GameEngine(state) {
         this.state = state;
@@ -246,7 +257,6 @@ var GameEngine = /** @class */ (function () {
     ;
     return GameEngine;
 }());
-//TODO: make this DI easier to work with
 var state = new GameState(Date.now());
 var engine = new GameEngine(state);
 begin(engine);
